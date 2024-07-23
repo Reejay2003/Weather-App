@@ -1,4 +1,3 @@
-// pages/index.tsx
 "use client";
 
 import React, { useState, useEffect } from 'react';
@@ -18,46 +17,35 @@ import {
 
 const Page = () => {
   const [data, setData] = useState<any>({});
-  const [location, setLocation] = useState<string>("Kathmandu");
+  const [location, setLocation] = useState<string>("Delhi");
   const [error, setError] = useState<string>("");
+
+  const fetchWeatherData = async (location: string) => {
+    const apiKey = '3934267ffacb4dcbaab141308242307'; // replace with your actual API key
+    const url = `http://api.weatherapi.com/v1/forecast.json?key=${apiKey}&q=${location}&days=7&aqi=no&alerts=no`;
+    try {
+      const res = await fetch(url);
+      if (!res.ok) {
+        throw new Error();
+      }
+      const data = await res.json();
+      setData(data);
+      setError("");
+    } catch (error) {
+      setError("404! City not found");
+      setData({});
+    }
+  };
 
   useEffect(() => {
     // Fetch initial weather data for Kathmandu
-    const fetchInitialData = async () => {
-      const url = `http://api.weatherapi.com/v1/forecast.json?key=b1e17ad5ee2c475a95081022240507&q=Kathmandu&days=7&aqi=no&alerts=no`;
-      try {
-        const res = await fetch(url);
-        if (!res.ok) {
-          throw new Error();
-        }
-        const data = await res.json();
-        setData(data);
-      } catch (error) {
-        setError("404! City not found");
-      }
-    };
-
-    fetchInitialData();
+    fetchWeatherData(location);
   }, []);
 
   const handleSearch = async (e: React.KeyboardEvent<HTMLInputElement>) => {
     if (e.key === "Enter") {
       e.preventDefault();
-      const url = `http://api.weatherapi.com/v1/forecast.json?key=b1e17ad5ee2c475a95081022240507&q=${location}&days=7&aqi=no&alerts=no`;
-      try {
-        const res = await fetch(url);
-        if (!res.ok) {
-          throw new Error();
-        }
-        const data = await res.json();
-        setData(data);
-        setLocation("");
-        setError(""); // Clear previous error
-      } catch (error) {
-        setError("404! City not found");
-        setLocation("");
-        setData({});
-      }
+      await fetchWeatherData(location);
     }
   };
 
@@ -67,14 +55,14 @@ const Page = () => {
   } else if (error !== "") {
     content = <div>Invalid City</div>;
   } else {
-      content = (
-        <div className= 'flex flexcol-2  justify-between mb-15 mt-[-25px]'>
-          <Current data = {data}/>
-          <div className='p-3 gap-4'>
-          <WeekForecast data = {data.forecast.forecastday} />
-          <WeatherDetails data ={data}/>
-          </div>      
-        </div>
+    content = (
+      <div className= 'flex flexcol-2  justify-between mb-15 mt-[-25px]'>
+        <Current data={data} />
+        <div className='p-3 gap-4'>
+          <WeekForecast data={data.forecast.forecastday} />
+          <WeatherDetails data={data} />
+        </div>      
+      </div>
     );
   }
 
